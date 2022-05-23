@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>6.0</version>
+    <date>2022-05-17T09:32:11Z</date>
+    <groups>
+        <group>
+            <uuid>7df96b18c230490a9a0a9e2307226338</uuid>
+            <name>Templates</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <uuid>0085af77bfc64456bb733ef325654067</uuid>
+            <template>Template APT Upgrade Monitor</template>
+            <name>Template APT Upgrade Monitor</name>
+            <description>Uses apt-get upgrade in simulation mode (apt-get upgrade -s) to get the info on which packages need an update, which of them are kept back, newly installed or removed.</description>
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>4ab9d28a387041db85db36d961e943a7</uuid>
+                    <name>Packages Kept Back -  Description</name>
+                    <type>TRAP</type>
+                    <key>apt.keptbackupdates.description</key>
+                    <delay>0</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Kept Back Package: An already installed package now needs to install more new package as dependency. When you manually and individually update these packages, you see what new packages are going to be installed and the error is not shown anymore.</description>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>APT Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>32f813bb2df3434e97d46e7f50c13427</uuid>
+                    <name>Packages Newlly Installed - Description</name>
+                    <type>TRAP</type>
+                    <key>apt.newlyinstalled.description</key>
+                    <delay>0</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>APT Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>3a6b43e1e26b4a17a3f080ac9d501e4a</uuid>
+                    <name>Total Packages to Update - Sum</name>
+                    <type>TRAP</type>
+                    <key>apt.packagesupgradesummary.count</key>
+                    <delay>0</delay>
+                    <description>Sum of all packages (Kept back, To upgrade, Newly installed, To remove)</description>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>APT Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>e7f5a9f036cd4ffea952058de3f394fd</uuid>
+                    <name>Total Packages Full Summary</name>
+                    <type>TRAP</type>
+                    <key>apt.packagesupgradesummary.description</key>
+                    <delay>0</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Summary of packages kept back, removed, newly installed or ready to upgrade</description>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>APT Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>21089d1467be4f45b73ef5de70e92337</uuid>
+                    <name>Packages Ready to Upgrade - Description</name>
+                    <type>TRAP</type>
+                    <key>apt.readytoupgrade.description</key>
+                    <delay>0</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>APT Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>a5874a7155ff4fb783fa23d5a82e77a4</uuid>
+                    <name>Packages To Remove - Description</name>
+                    <type>TRAP</type>
+                    <key>apt.toremove.description</key>
+                    <delay>0</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>APT Update</value>
+                        </tag>
+                    </tags>
+                </item>
+            </items>
+        </template>
+    </templates>
+    <triggers>
+        <trigger>
+            <uuid>c8954c56a4ed454e9083a8bc00f89a45</uuid>
+            <expression>last(/Template APT Upgrade Monitor/apt.packagesupgradesummary.count)&gt;0
+
+and last(/Template APT Upgrade Monitor/apt.packagesupgradesummary.description)&lt;&gt;0
+
+and last(/Template APT Upgrade Monitor/apt.keptbackupdates.description)&lt;&gt;0
+and last(/Template APT Upgrade Monitor/apt.newlyinstalled.description)&lt;&gt;0
+and last(/Template APT Upgrade Monitor/apt.readytoupgrade.description)&lt;&gt;0
+and last(/Template APT Upgrade Monitor/apt.toremove.description)&lt;&gt;0</expression>
+            <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
+            <recovery_expression>last(/Template APT Upgrade Monitor/apt.packagesupgradesummary.count)=0</recovery_expression>
+            <name>{ITEM.LASTVALUE1} Updates available in {HOST.NAME}</name>
+            <event_name>{ITEM.LASTVALUE2} in {HOST.NAME}</event_name>
+            <priority>WARNING</priority>
+            <manual_close>YES</manual_close>
+            <tags>
+                <tag>
+                    <tag>Application</tag>
+                    <value>APT</value>
+                </tag>
+            </tags>
+        </trigger>
+    </triggers>
+</zabbix_export>

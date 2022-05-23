@@ -1,0 +1,136 @@
+{
+    "zabbix_export": {
+        "version": "6.0",
+        "date": "2022-05-17T09:32:27Z",
+        "groups": [
+            {
+                "uuid": "7df96b18c230490a9a0a9e2307226338",
+                "name": "Templates"
+            }
+        ],
+        "templates": [
+            {
+                "uuid": "0085af77bfc64456bb733ef325654067",
+                "template": "Template APT Upgrade Monitor",
+                "name": "Template APT Upgrade Monitor",
+                "description": "Uses apt-get upgrade in simulation mode (apt-get upgrade -s) to get the info on which packages need an update, which of them are kept back, newly installed or removed.",
+                "groups": [
+                    {
+                        "name": "Templates"
+                    }
+                ],
+                "items": [
+                    {
+                        "uuid": "4ab9d28a387041db85db36d961e943a7",
+                        "name": "Packages Kept Back -  Description",
+                        "type": "TRAP",
+                        "key": "apt.keptbackupdates.description",
+                        "delay": "0",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "description": "Kept Back Package: An already installed package now needs to install more new package as dependency. When you manually and individually update these packages, you see what new packages are going to be installed and the error is not shown anymore.",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "APT Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "32f813bb2df3434e97d46e7f50c13427",
+                        "name": "Packages Newlly Installed - Description",
+                        "type": "TRAP",
+                        "key": "apt.newlyinstalled.description",
+                        "delay": "0",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "APT Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "3a6b43e1e26b4a17a3f080ac9d501e4a",
+                        "name": "Total Packages to Update - Sum",
+                        "type": "TRAP",
+                        "key": "apt.packagesupgradesummary.count",
+                        "delay": "0",
+                        "description": "Sum of all packages (Kept back, To upgrade, Newly installed, To remove)",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "APT Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "e7f5a9f036cd4ffea952058de3f394fd",
+                        "name": "Total Packages Full Summary",
+                        "type": "TRAP",
+                        "key": "apt.packagesupgradesummary.description",
+                        "delay": "0",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "description": "Summary of packages kept back, removed, newly installed or ready to upgrade",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "APT Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "21089d1467be4f45b73ef5de70e92337",
+                        "name": "Packages Ready to Upgrade - Description",
+                        "type": "TRAP",
+                        "key": "apt.readytoupgrade.description",
+                        "delay": "0",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "APT Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "a5874a7155ff4fb783fa23d5a82e77a4",
+                        "name": "Packages To Remove - Description",
+                        "type": "TRAP",
+                        "key": "apt.toremove.description",
+                        "delay": "0",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "APT Update"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "triggers": [
+            {
+                "uuid": "c8954c56a4ed454e9083a8bc00f89a45",
+                "expression": "last(/Template APT Upgrade Monitor/apt.packagesupgradesummary.count)>0\n\nand last(/Template APT Upgrade Monitor/apt.packagesupgradesummary.description)<>0\n\nand last(/Template APT Upgrade Monitor/apt.keptbackupdates.description)<>0\nand last(/Template APT Upgrade Monitor/apt.newlyinstalled.description)<>0\nand last(/Template APT Upgrade Monitor/apt.readytoupgrade.description)<>0\nand last(/Template APT Upgrade Monitor/apt.toremove.description)<>0",
+                "recovery_mode": "RECOVERY_EXPRESSION",
+                "recovery_expression": "last(/Template APT Upgrade Monitor/apt.packagesupgradesummary.count)=0",
+                "name": "{ITEM.LASTVALUE1} Updates available in {HOST.NAME}",
+                "event_name": "{ITEM.LASTVALUE2} in {HOST.NAME}",
+                "priority": "WARNING",
+                "manual_close": "YES",
+                "tags": [
+                    {
+                        "tag": "Application",
+                        "value": "APT"
+                    }
+                ]
+            }
+        ]
+    }
+}
