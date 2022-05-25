@@ -4,14 +4,17 @@
 # Description:  APT updates Monitor using Zabbix via command `apt-get -s upgrade`
 #
 
+# Server configuration file route
+AGENTD_CONF_FILE=/etc/zabbix/zabbix_agentd.conf
+
 # Route for tmp file to store yum output
 TEMP_ZBX_FILE=/tmp/zabbix_apt_check_output.tmp
 echo -n "" > $TEMP_ZBX_FILE
 
-# Check if ServerActive is available
-ZBX_SERVERACTIVEITEM=$(egrep ^Server /etc/zabbix/zabbix_agentd.conf | cut -d = -f 2)
-if [ -z "$ZBX_SERVERACTIVEITEM" ]; then
-   echo "Agent is not running on active mode"
+# Check if Server IP/name is set in configuration file
+ZBX_SERVER=$(egrep ^Server $AGENTD_CONF_FILE | cut -d = -f 2)
+if [ -z "$ZBX_SERVER" ]; then
+   echo "Server is not set in zabbix_agentd.conf file"
    exit -1
 fi
 
@@ -70,4 +73,4 @@ echo -n "\"$ZBX_HOSTNAME\" apt.readytoupgrade.description $PACKAGES_READY_TO_UPD
 echo -n "\"$ZBX_HOSTNAME\" apt.toremove.description $PACKAGES_TO_REMOVE_DESCRIPTION\n" >> $TEMP_ZBX_FILE
 
 # OS Release Number
-zabbix_sender -z $ZBX_SERVERACTIVEITEM -i $TEMP_ZBX_FILE
+zabbix_sender -z $ZBX_SERVER -i $TEMP_ZBX_FILE
