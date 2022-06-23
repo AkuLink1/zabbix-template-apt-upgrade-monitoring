@@ -1,6 +1,6 @@
 #!/bin/sh
-# Author:       Moluss
-# Website       https://github.com/Moluss
+# Author:       AkuLink1
+# Website       https://github.com/AkuLink1
 # Description:  APT updates Monitor using Zabbix via command `apt-get -s upgrade`
 #
 
