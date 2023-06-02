@@ -2,29 +2,76 @@
 # Author:       AkuLink1
 # Website       https://github.com/AkuLink1
 # Description:  APT updates Monitor using Zabbix via command `apt-get -s upgrade`
-#
+# 2023-05-31 updated to support Zabbix server ports
 
 # Server configuration file route
 AGENTD_CONF_FILE=/etc/zabbix/zabbix_agentd.conf
+USE_ENCRYPTION=0
 
 # Route for tmp file to store yum output
 TEMP_ZBX_FILE=/tmp/zabbix_apt_check_output.tmp
 echo -n "" > $TEMP_ZBX_FILE
 
+if [ ! -f "$AGENTD_CONF_FILE" ]; then
+  echo "Error: File '$AGENTD_CONF_FILE' does not exist."
+  exit 1
+fi
 # Check if Server IP/name is set in configuration file
-ZBX_SERVER=$(egrep ^Server $AGENTD_CONF_FILE | cut -d = -f 2)
-if [ -z "$ZBX_SERVER" ]; then
-   echo "Server is not set in zabbix_agentd.conf file"
-   exit -1
+ZBX_SERVERACTIVEITEM=$(egrep ^ServerActive $AGENTD_CONF_FILE | cut -d = -f 2)
+
+# Check if ServerActive is available
+if [ -z "$ZBX_SERVERACTIVEITEM" ]; then
+   echo "Agent is not running on active mode"
+   exit 1
+fi
+
+# Extract the hostname and port using pattern matching
+line=$(grep "^ServerActive=" $AGENTD_CONF_FILE)
+if echo "$line" | grep -Eq "ServerActive=([a-zA-Z0-9.-]+)(:([0-9]+))?$"; then
+
+  # Store the hostname
+  ZBX_SERVERACTIVEITEM=$(echo "$line" | sed -E 's/ServerActive=([a-zA-Z0-9.-]+)(:([0-9]+))?/\1/')
+
+  # Store the port
+  ZBX_SERVERACTIVEITEM_PORT=$(echo "$line" | sed -E 's/ServerActive=([a-zA-Z0-9.-]+)(:([0-9]+))?/\3/')
+  if [ -z "$ZBX_SERVERACTIVEITEM_PORT" ]; then
+    ZBX_SERVERACTIVEITEM_PORT="10051"
+  fi
+
+else
+  echo "Error: Unable to find the ServerActive line"
+  exit -1
 fi
 
 # Get hostname
-ZBX_HOSTNAMEITEM_PRESENT=$(egrep ^HostnameItem /etc/zabbix/zabbix_agentd.conf -c)
+ZBX_HOSTNAMEITEM_PRESENT=$(egrep ^HostnameItem $AGENTD_CONF_FILE -c)
 if [ "$ZBX_HOSTNAMEITEM_PRESENT" -ge "1" ]; then
         ZBX_HOSTNAME=$(hostname)
 else
-        ZBX_HOSTNAME=$(egrep ^Hostname /etc/zabbix/zabbix_agentd.conf | cut -d = -f 2)
+        ZBX_HOSTNAME=$(egrep ^Hostname $AGENTD_CONF_FILE | cut -d = -f 2)
 fi
+
+
+# Read the PSK identity and file from zabbix_agentd.conf
+if [ "$USE_ENCRYPTION" -ge "1" ]; then
+	psk_identity=$(sed -n 's/^TLSPSKIdentity[[:space:]]*=[[:space:]]*//p' $AGENTD_CONF_FILE | tr -d ' ')
+	psk_file=$(sed -n 's/^TLSPSKFile[[:space:]]*=[[:space:]]*//p' $AGENTD_CONF_FILE | tr -d ' ')
+	tls_connect=$(sed -n 's/^TLSConnect[[:space:]]*=[[:space:]]*//p' $AGENTD_CONF_FILE | tr -d ' ')
+	
+	if [[ -n $psk_identity ]]; then
+	        psk_identity="--tls-psk-identity $psk_identity"
+	fi
+	
+	if [[ -n $psk_file ]]; then
+	        psk_file="--tls-psk-file $psk_file"
+	fi
+	
+	if [[ -n $tls_connect ]]; then
+	        tls_connect="--tls-connect $tls_connect"
+	fi
+fi
+
+
 
 #######
 # APT Update + Upgrade info
@@ -73,4 +120,7 @@ echo -n "\"$ZBX_HOSTNAME\" apt.readytoupgrade.description $PACKAGES_READY_TO_UPD
 echo -n "\"$ZBX_HOSTNAME\" apt.toremove.description $PACKAGES_TO_REMOVE_DESCRIPTION\n" >> $TEMP_ZBX_FILE
 
 # OS Release Number
-zabbix_sender -z $ZBX_SERVER -i $TEMP_ZBX_FILE
+
+
+zabbix_sender -z $ZBX_SERVERACTIVEITEM -p $ZBX_SERVERACTIVEITEM_PORT $psk_identity $psk_file $tls_connect -i $TEMP_ZBX_FILE -vv
+
