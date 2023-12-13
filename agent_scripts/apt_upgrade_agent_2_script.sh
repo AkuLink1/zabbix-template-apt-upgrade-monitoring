@@ -1,20 +1,20 @@
 #!/bin/sh
-# Author:       AkuLink1
-# Website       https://github.com/AkuLink1
+# Author:       JakobHeubl
+# Website       https://github.com/JakobHeubl
 # Description:  APT updates Monitor using Zabbix via command `apt-get -s upgrade`
 # Forked from:  https://github.com/AkuLink1/zabbix-template-apt-upgrade-monitoring
 
 # Server configuration file route
-AGENTD_CONF_FILE=/etc/zabbix/zabbix_agentd.conf
+AGENTD_CONF_FILE=/etc/zabbix/zabbix_agent2.conf
 
 # Route for tmp file to store yum output
 TEMP_ZBX_FILE=/tmp/zabbix_apt_check_output.tmp
 echo -n "" > $TEMP_ZBX_FILE
 
 # Check if Server IP/name is set in configuration file
-ZBX_SERVER=$(egrep ^Server $AGENTD_CONF_FILE | cut -d = -f 2 | head -n 1)
+ZBX_SERVER=$(egrep ^Server= $AGENTD_CONF_FILE | cut -d = -f 2 | head -n 1)
 if [ -z "$ZBX_SERVER" ]; then
-   echo "Server is not set in zabbix_agentd.conf file"
+   echo "Server is not set in zabbix_agent2.conf file"
    exit -1
 fi
 
