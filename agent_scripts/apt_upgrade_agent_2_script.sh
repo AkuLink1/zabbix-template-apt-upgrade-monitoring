@@ -19,11 +19,11 @@ if [ -z "$ZBX_SERVER" ]; then
 fi
 
 # Get hostname
-ZBX_HOSTNAMEITEM_PRESENT=$(egrep ^HostnameItem /etc/zabbix/zabbix_agent2.conf -c)
+ZBX_HOSTNAMEITEM_PRESENT=$(egrep ^HostnameItem $AGENTD_CONF_FILE -c)
 if [ "$ZBX_HOSTNAMEITEM_PRESENT" -ge "1" ]; then
         ZBX_HOSTNAME=$(hostname)
 else
-        ZBX_HOSTNAME=$(egrep ^Hostname /etc/zabbix/zabbix_agent2.conf | cut -d = -f 2)
+        ZBX_HOSTNAME=$(egrep ^Hostname $AGENTD_CONF_FILE | cut -d = -f 2)
 fi
 
 #######
