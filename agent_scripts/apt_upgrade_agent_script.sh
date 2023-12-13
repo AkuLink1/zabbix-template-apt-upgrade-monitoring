@@ -2,7 +2,7 @@
 # Author:       AkuLink1
 # Website       https://github.com/AkuLink1
 # Description:  APT updates Monitor using Zabbix via command `apt-get -s upgrade`
-#
+# Forked from:  https://github.com/AkuLink1/zabbix-template-apt-upgrade-monitoring
 
 # Server configuration file route
 AGENTD_CONF_FILE=/etc/zabbix/zabbix_agentd.conf
